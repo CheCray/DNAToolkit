@@ -179,4 +179,4 @@ DNAstr2 = "CCGGCACAGGCCTTACAATTATACCTCACTGATTTATTCTTGGCTTCCGTAGAAGCTCGCTCAGTTCTA
 #     print(f" {read_one_fasta('Amel_DSCAM.FASTA')} ")
 #     print(f" {LifespanFibonacci(94, 19)} ")
 #     print(HighestGCcontent('input.txt'))
-print(str(PointMutationCounter(DNAstr1, DNAstr2)))
+# print(str(PointMutationCounter(DNAstr1, DNAstr2)))
