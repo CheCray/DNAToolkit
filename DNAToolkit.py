@@ -198,4 +198,4 @@ DNAstr2 = "CCGGCACAGGCCTTACAATTATACCTCACTGATTTATTCTTGGCTTCCGTAGAAGCTCGCTCAGTTCTA
 #     print(f" {LifespanFibonacci(94, 19)} ")
 #     print(HighestGCcontent('input.txt'))
 # print(str(PointMutationCounter(DNAstr1, DNAstr2)))
-print(Permutations(3))
+print(Permutations(6))
