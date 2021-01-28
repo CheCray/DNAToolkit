@@ -12,14 +12,85 @@ DNA_ReverseComplement = {'A': 'T', 'T': 'A', 'C': 'G', 'G': 'C'}
 randDNAStr = ''.join([random.choice(Nucleotides)
                       for nuc in range(100)])
 
+DNACodonTable = {
+    'ATA': 'I', 'ATC': 'I', 'ATT': 'I', 'ATG': 'M',
+    'ACA': 'T', 'ACC': 'T', 'ACG': 'T', 'ACT': 'T',
+    'AAC': 'N', 'AAT': 'N', 'AAA': 'K', 'AAG': 'K',
+    'AGC': 'S', 'AGT': 'S', 'AGA': 'R', 'AGG': 'R',
+    'CTA': 'L', 'CTC': 'L', 'CTG': 'L', 'CTT': 'L',
+    'CCA': 'P', 'CCC': 'P', 'CCG': 'P', 'CCT': 'P',
+    'CAC': 'H', 'CAT': 'H', 'CAA': 'Q', 'CAG': 'Q',
+    'CGA': 'R', 'CGC': 'R', 'CGG': 'R', 'CGT': 'R',
+    'GTA': 'V', 'GTC': 'V', 'GTG': 'V', 'GTT': 'V',
+    'GCA': 'A', 'GCC': 'A', 'GCG': 'A', 'GCT': 'A',
+    'GAC': 'D', 'GAT': 'D', 'GAA': 'E', 'GAG': 'E',
+    'GGA': 'G', 'GGC': 'G', 'GGG': 'G', 'GGT': 'G',
+    'TCA': 'S', 'TCC': 'S', 'TCG': 'S', 'TCT': 'S',
+    'TTC': 'F', 'TTT': 'F', 'TTA': 'L', 'TTG': 'L',
+    'TAC': 'Y', 'TAT': 'Y', 'TAA': '_', 'TAG': '_',
+    'TGC': 'C', 'TGT': 'C', 'TGA': '_', 'TGG': 'W'}
 
-def validateSeq(dna_seq):
+RNACodonTable = {"UUU":"F", "UUC":"F", "UUA":"L", "UUG":"L",
+    "UCU":"S", "UCC":"s", "UCA":"S", "UCG":"S",
+    "UAU":"Y", "UAC":"Y", "UAA":"STOP", "UAG":"STOP",
+    "UGU":"C", "UGC":"C", "UGA":"STOP", "UGG":"W",
+    "CUU":"L", "CUC":"L", "CUA":"L", "CUG":"L",
+    "CCU":"P", "CCC":"P", "CCA":"P", "CCG":"P",
+    "CAU":"H", "CAC":"H", "CAA":"Q", "CAG":"Q",
+    "CGU":"R", "CGC":"R", "CGA":"R", "CGG":"R",
+    "AUU":"I", "AUC":"I", "AUA":"I", "AUG":"M",
+    "ACU":"T", "ACC":"T", "ACA":"T", "ACG":"T",
+    "AAU":"N", "AAC":"N", "AAA":"K", "AAG":"K",
+    "AGU":"S", "AGC":"S", "AGA":"R", "AGG":"R",
+    "GUU":"V", "GUC":"V", "GUA":"V", "GUG":"V",
+    "GCU":"A", "GCC":"A", "GCA":"A", "GCG":"A",
+    "GAU":"D", "GAC":"D", "GAA":"E", "GAG":"E",
+    "GGU":"G", "GGC":"G", "GGA":"G", "GGG":"G", }
+
+Monoisotopic_Mass = {'A': 71.03711, 'C': 103.00919, 'D': 115.02694,
+                     'E': 129.04259, 'F': 147.06841, 'G': 57.02146,
+                     'H': 137.05891, 'I': 113.08406, 'K': 128.09496,
+                     'L': 113.08406, 'M': 131.04049, 'N': 114.04293,
+                     'P': 97.05276, 'Q': 128.05858, 'R': 156.10111,
+                     'S': 87.03203, 'T': 101.04768, 'V': 99.06841,
+                     'W': 186.07931, 'Y': 163.06333}
+
+def translation(seq):
+    transcriptedseq = ""
+    position = 0
+    CodonSeq = ""
+    if validateDNASeq(seq) == False and validateDNASeq(reversetranscription(seq)) == False:
+        return print("Invalid Sequence Provided")
+    else:
+        transcriptedseq = transcription(seq)
+        while position < len(transcriptedseq):
+            block = transcriptedseq[position:3 + position]
+            # print(block)
+            if len(block) < 3 or RNACodonTable[block] == "STOP" or position > len(transcriptedseq):
+                #print('end block found')
+                return CodonSeq
+            else:
+                CodonSeq += RNACodonTable[block]
+                # print(gencode[block])
+                position = position + 3
+    return CodonSeq
+
+
+
+def DNAstr(len):
+    DNA = ''.join([random.choice(Nucleotides)
+             for i in range(len)])
+    return DNA
+
+
+def validateDNASeq(dna_seq):
     """Check the sequence to make sure it is a DNA String"""
     tmpseq = dna_seq.upper()
     for nuc in tmpseq:
         if nuc not in Nucleotides:
             return False
-    return tmpseq
+    return True
+
 
 
 def countNucFrequency(seq):
@@ -34,6 +105,10 @@ def countNucFrequency(seq):
 def transcription(seq):
     """ DNA to RNA transcription """
     return seq.replace("T", "U")
+
+def reversetranscription(seq):
+    """ DNA to RNA transcription """
+    return seq.replace("U", "T")
 
 
 def reversecomplement(seq):
@@ -50,6 +125,14 @@ def GCcontent(seq):
     GC += tmpFreqDict["G"]
     GC += tmpFreqDict["C"]
     return GC / len(seq)
+
+def proteinmass(seq):
+    weight = 0
+    for nuc in range(len(seq)):
+        peptide = seq[nuc]
+        weight += Monoisotopic_Mass[peptide]
+    return weight
+
 
 
 def SubsectionGCcontent(seq, k):
@@ -143,7 +226,8 @@ def LifespanFibonacci(n, l):
         print(reaper)
         newbabies = adults
         if i < 1:
-            for x in range(l - 1):  # at the begining of the simulation, you need to add how many months will pass before the first adult dies of old age
+            for x in range(
+                    l - 1):  # at the begining of the simulation, you need to add how many months will pass before the first adult dies of old age
                 reaper.append(0)
         reaper.append(babies)  # notes how many deaths will occur after lifespan ends
         print("added babies to death list")
@@ -180,22 +264,25 @@ def Permutations(n):
         print(permutation)
 
 
-
-
-
 DNAstr1 = "ATGCACTCCGCATGCCTATTATATAATGCTGTTTGATACCGGTCTTCTGTAGGGGTTCGTTTAGTTCGTGCCGGTATCCGCTCATCCGGTCACCCGCAAGAAACCTCAGGAGTGTAACGTAGCCCCTGGACGGATGATCACGACAACACAGCCCATGGTCTGGGCACTTGAGATGCTAGGGTGACGCCGTAACTTATGGCCTTTCTACTCCCTGATGGAGATTACACATTCTTCTATGCTTGTCACTAATAGTATCACGTCCCAAGGGCTCTCAAGCAAATCGCTGTTGTCGTATCTGTTCGTGAGTGCGGCAAGGAGTGTCTGATGGGTCTACAACGGAGTTCGCTCAAAATTGAACGTGTGATGCAGGAGATTATTCAGCCACGCGCGTTACGGAGTTGATTATATGAACAGTCAGCTTTATAGCGCCATGAGACTCACGTCGAATAATCCACCCGCGGCAATCCCTAGCAAGACGCACTTTCGAGCCAATCACGTTCATGCCAGCTCGGTCCTTAACTTGGGAGCGGCACATATATGCCAGTGCTGGTGAAGGCTTAATAGCAACATTATACCAACACTGCGGGAAATCTTTGGTAAGGAGAATGTCCAGTGATTGGCATTGAGTGTGAGACTGGTGAATCTACGGTGCCAATGACACCTAGGCCGGGGGTTGATGTGCTTCGCCCTGAAACATATTCTGTTTGGCCGATTGCGCTTTTCTATCTAATAATCTAGATTGTAGTAGGGATCTTCGCCCTTCCCTTAACCGAGACGTTCTATTCCCAGGCCCAAAGCGAGGTGGGTCGCGCTGCTTGGACGGCCACAGGTTTCCCCATTGTTTTAAGTACGTTACAGATTTCTTCATGCATACCGCCTAGGTGCAGCACAGCACAGATTATGGGGCCCAAAGCACGGTCTTACGAAAACTCTCGCCGTGCTATTTACGTGTCTACAACAACATCTAAACGGATTGACAAGAA"
 DNAstr2 = "CCGGCACAGGCCTTACAATTATACCTCACTGATTTATTCTTGGCTTCCGTAGAAGCTCGCTCAGTTCTAGCTAGTAACCGCTTGACCGGGTAGACTATAGAGACCGTGCGAGTGGCACTTAGGGTCTTGTCTGATAATCACCTTGTCAGAACCGGATAGCGAGTAACTCCATGGTCAAGAGTTATGCTCGCATTTATCGCCTGACGTTACAGCGCTGGGTAATCCCTATTGGCTTAGGCAGCTGACGGAGTGTAGCTAGTCACAGCCCGGCGCTTGCAATTACACCTTCCAATCCGGGATTCTAAATCCAACAGGTTTGGCGTGAACCTCGCATGGGGGAAAACTCCTCATAGGGAAGGACATATGCATAAGTTTTTGCTGACAAATGGGAGAGGAATTACATATACTGCAGCGTCCGCATGATTGCACCATGACACTCTAATAAATTATTGCGCGACACGTAATGCCCTACCTGGCGGACACGCTACACTATTCCTAAGGGGACACAGCCGTCATTCAACCCGGAGCGGCTGCAAATTCGCCGTAAAGTCCAACTCTGATTATCGATGTCAAACCTCTAGTGCACGAGGTCTTGGGGCACGTATAACTCTAATCTGGCGCGAATGCTGTCAGAACCCACGGACAGCTGAACATTAAGCATCCAGGCCGGAATTGGGGGTGCATCACCAGGAGGAAGTTTCTAAGGGACCGCGTTCTCGATACAATTAGGTTGGGCATCTCGGAGAACCGCCCTACGGACTGCCATCAGTGGGCATGATTTGCCCTCAGAGGATATGGTACGGCGCGCACCCACGTACGGCGTCATGAGCTACATCTATTGTTTTTAGGAGTATAGGGATTTTGGTTGATATCCAGCCCAAAGACGTTAGAGGCCGAGTTGAGAGGAACTACCCGCGGACCACTGTCAAGTGGGTCTCTTGTGGATGTCAATTACAAGTTAATGCTTACTCAATTCATTAGCC"
-
-# if validateSeq(randDNAStr) != True:
+NewDNA = DNAstr(40)
+protein = 'SKADYEK'
+exampleRNA = 'AUGGCCAUGGCGCCCAGAACUGAGAUCAAUAGUACCCGUAUUAACGGGUGA'
+if validateDNASeq(NewDNA) == True:
+    print("Printing Sequence, Nuc Frequency, DNA Transcript, Reverse Compliment, GC Content, and GC Content of 10 Nucleotides. ")
+    print(f" Sequence: {NewDNA}")
+    print(f" Nucleotide Frequency: {countNucFrequency(NewDNA)}")
+    print(f" RNA Transcript: {transcription(NewDNA)}")
+    print(f" Reverse Compliment: {reversecomplement(NewDNA)}")
+    print(f" Total GC Content: {GCcontent(NewDNA)}")
+    print(f" GC Content of Subsections of 10 Nucleotides: {SubsectionGCcontent(NewDNA, 10)}")
+    print(f" Protien Mass of {protein}: {proteinmass(protein)}")
+    print(f" Translated exampleRNA: {translation(exampleRNA)}")
 #     print(randDNAStr)
-#     print(countNucFrequency(randDNAStr))
-#     print(transcription(randDNAStr))
-#     print(randDNAStr)
-#     print(reversecomplement(randDNAStr))
-#     print(GCcontent(randDNAStr))
-#     print(SubsectionGCcontent(randDNAStr, 10))
+#     print(SubsectionGCcontent(NewDNA, 10))
 #     print(f" {read_one_fasta('Amel_DSCAM.FASTA')} ")
 #     print(f" {LifespanFibonacci(94, 19)} ")
 #     print(HighestGCcontent('input.txt'))
 # print(str(PointMutationCounter(DNAstr1, DNAstr2)))
-print(Permutations(6))
+# print(Permutations(6))
