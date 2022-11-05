@@ -67,7 +67,6 @@ def mRNAinference(AAseq): # WIP
        permutationcount = permutationcount * len(ProteinCodonTable[AA])
     return permutationcount % 1000000
 
-
 def reversedictionarycreator(seq): # Thanks Kevin
     """ Takes a dictionary and swaps keys with values """
     proteinToCodon = {}
@@ -121,7 +120,6 @@ def listopenreadingframes(file):
     file.close()
     return orflist
 
-
 def translation(seq) -> str:
     """Translates DNA or RNA seq into a protein stopping at the first '_' codon."""
     transcriptedseq = "" # Stores provided sequence in RNA form
@@ -164,13 +162,10 @@ def seqtoprotein(seq) -> str:
                 position = position + 3
     return CodonSeq
 
-
-
 def randDNAstr(len):
     DNA = ''.join([random.choice(Nucleotides)
              for i in range(len)])
     return DNA
-
 
 def validateDNASeq(dna_seq):
     """Check the sequence to make sure it is a DNA String. Considers "N" a valid base call"""
@@ -188,7 +183,6 @@ def validateRawReadSeq(dna_seq):
             return False
     return True
 
-
 def countNucFrequency(seq):
     """Counts the frequency of types of nucleotides"""
     tmpFreqDict = {"A": 0, "C": 0, "G": 0, "T": 0}
@@ -196,7 +190,6 @@ def countNucFrequency(seq):
     for nuc in seq:
         tmpFreqDict[nuc] += 1
     return tmpFreqDict
-
 
 def transcription(DNAseq):
     """ DNA to RNA transcription (RNA copy of CODING strand) """
@@ -206,10 +199,8 @@ def reversetranscription(seq):
     """ RNA to DNA transcription """
     return seq.replace("U", "T")
 
-
 def reversecomplement(seq):
     return ''.join([DNA_ReverseComplement[nuc] for nuc in seq])[::-1]  # returns 5' to 3'
-
 
 def GCcontent(seq):
     """Counts the frequency of types of G and C base pairs"""
@@ -229,8 +220,6 @@ def proteinmass(seq):
         weight += Monoisotopic_Mass[peptide]
     return weight
 
-
-
 def SubsectionGCcontent(seq, k):
     """Counts the frequency of types of G and C base pairs within subsection of "k" length"""
     tmpFreqDict = {"A": 0, "C": 0, "G": 0, "T": 0}
@@ -241,7 +230,6 @@ def SubsectionGCcontent(seq, k):
         subseq = seq[i:i + k]
         subsections.append(GCcontent(subseq))
     return subsections
-
 
 def HighestGCcontent(file):
     """Takes a fasta file returns the highest GC content and its index in the list provided by the function read_one_fasta IN PERCENT"""
@@ -258,7 +246,6 @@ def HighestGCcontent(file):
 
     # print(GClist) #, print(ID[holdindex])
     return ID[holdindex], (hold * 100)
-
 
 def read_one_fasta(file):
     # function to read one sequence in FASTA format from a textfile.
@@ -291,7 +278,6 @@ def read_one_fasta(file):
     F.close()
     return idnum, ID, seqlist
 
-
 def Fibonacci(n, k):
     """Takes n months and k number of offspring per breeding pair nad returns number of breeding adults"""
     babies = 1
@@ -303,7 +289,6 @@ def Fibonacci(n, k):
         babies = newbabies
         newbabies = 0
     return (adults)
-
 
 def LifespanFibonacci(n, l):
     """Takes n months and a lifespan of l, assumes each breeding pair has one viable offspring"""
@@ -334,7 +319,6 @@ def LifespanFibonacci(n, l):
 
     return adults
 
-
 def PointMutationCounter(seq1, seq2):
     """Takes two strings checks if theres a mutation at each position"""
     mutationcount = 0
@@ -348,7 +332,6 @@ def PointMutationCounter(seq1, seq2):
         if seq1[y] != seq2[y]:
             mutationcount = mutationcount + 1
     return (mutationcount)
-
 
 def Permutations(n):
     print(math.factorial(n))
@@ -418,130 +401,6 @@ def search_phage_reads(file):
     readcount = (readcount / 4) # takes the lines from the fastq and devides by 4 lines for each read to get the read count
     df = pd.DataFrame(seqfreq.items())
     return readlist, ampliconseq, vectorseq, readcount, seqfreq, df
-
-
-def search_cluster_peptide(file):
-    """take fastaptamer FASTA "-count" reads the clusters and their associated info, finds vectors."""
-    # function to read fastaptamer cluster FASTA output
-    # input: the name (complete path) of the file that contains the sequence to read
-    # output: dicts, containing the cluster, sequence and other details about the sequence
-
-    F = open(file)
-    idcount = 0
-    ampliconseq = [] # holds valid vectors as
-    clusternum = [] #index of the cluster of duplicate seqs found
-    startvector = "TTCGCAATTCCTTTAGTTGTTCCTT"
-    endvector = "AGCAAAACCTCATACAGAAAATTCA"
-    readcount = []
-    RPM = []
-    rawread = []
-    fastatrack = []
-    fastaline = []
-
-    for line in F:
-        line = line.rstrip("\n")  # removes new line characters (returns) from line
-
-        if ">" and "-" in line:
-            fastaline.append(line)
-            cluster = line[line.find(">") + 1:line.find("-")] # storing the index of the cluster
-            clusternum.append(cluster)
-           # print(cluster)
-            count = int(line[line.find("-") + 1:line.rfind("-")]) # storing the number of reads with seq turned into an integer
-            readcount.append(count)
-            print(count)
-            ReadperM = line[line.rfind("-") + 1:len(line)]
-            RPM.append(float(ReadperM)) # reads per million storage
-            print(ReadperM)
-
-        if validateRawReadSeq(line) == True and len(line) > 5:
-            idcount +=1
-            rawread.append(line)
-    pepseq = []
-    rawindex = []
-    ampToPep = {}
-    ampcount = []
-    rcfreq = {}
-    pepcount = {}
-    ampRPM = []
-
-    for index in range(len(rawread)):
-        if startvector and endvector in rawread[index]:
-            start = rawread[index].find(startvector)  # finds index for the start vector
-            stop = rawread[index].find(endvector)  # finds index for the end vector
-            removeEnd = rawread[index][(start):(stop + len(endvector))]
-            removeEndpep = ampliconseqtoprotein((removeEnd))
-            if removeEndpep in pepcount:
-                # print(pepcount[removeEndpep])
-                # print(readcount[index])
-                pepcount[removeEndpep] = pepcount[removeEndpep] + readcount[index]
-            else:
-                pepcount[removeEndpep] = readcount[index]
-
-            pepseq.append(ampliconseqtoprotein(removeEnd))
-            ampliconseq.append(removeEnd)# do you need this?
-            rawindex.append(index)
-            ampcount.append(readcount[index]) #storing the count from fastaptamer
-            ampRPM.append(RPM[index])
-            fastatrack.append(fastaline[index])
-            fastatrack.append(removeEndpep)
-        elif startvector and endvector in reversecomplement(rawread[index]):
-            reverse = reversecomplement(rawread[index])
-            start = reverse.find(startvector)  # finds index for the start vector
-            stop = reverse.find(endvector)  # finds index for the end vector
-            # print("reverse compliment found")
-            removeEnd = reverse[(start):(stop + len(endvector))]
-
-            try:
-                removeEndpep = ampliconseqtoprotein(removeEnd)
-            except KeyError:
-                print("break")
-                continue
-
-            if removeEndpep in rcfreq:
-                rcfreq[removeEndpep] = rcfreq[removeEndpep] + 1
-            else:
-                rcfreq[removeEndpep] = 1
-
-            if removeEndpep in pepcount:
-                # print(pepcount[removeEndpep])
-                # print(readcount[index])
-                pepcount[removeEndpep] = pepcount[removeEndpep] + readcount[index]
-            else:
-                pepcount[removeEndpep] = readcount[index]
-            pepseq.append(removeEndpep)
-            ampliconseq.append(removeEnd)  # do you need this?
-            rawindex.append(index)
-            ampcount.append(readcount[index])
-            ampRPM.append(RPM[index])
-            fastatrack.append(fastaline[index])
-            fastatrack.append(removeEndpep)
-
-    pepfreq = {}
-    cumRPM = {}
-
-    for index in range(len(pepseq)):
-        ampToPep[pepseq[index]] = ampliconseq[index]
-
-        if pepseq[index] in pepfreq:
-            # print(pepfreq[pepseq[index]])
-            pepfreq[pepseq[index]] = (pepfreq[pepseq[index]] + ampcount[index])
-            # print(pepfreq[pepseq[index]])
-            cumRPM[pepseq[index]] = (cumRPM[pepseq[index]] + ampRPM[index])
-        else:
-            pepfreq[pepseq[index]] = ampcount[index]
-            cumRPM[pepseq[index]] = ampRPM[index]
-
-    for index in range(len(pepseq)):
-        if pepfreq[pepseq[index]] < 10:
-            del pepfreq[pepseq[index]]
-
-    print(pepfreq)
-    df = pd.DataFrame(pepfreq.items())
-
-    df.sort_values
-    df.columns = ['Peptide Sequence', 'Read Count']
-    df["RPM"] = cumRPM.values()
-    return df, fastaline
 
 def search_cluster_peptide(file):
     """take fastaptamer FASTA "-count" reads the clusters and their associated info, finds vectors."""
@@ -844,8 +703,6 @@ def peptide_backround_removal(positive_selection_dict, posRPM, negative_selectio
     filteredFreqDf["RPM"] = cumRPM.values()
     return filteredFreqDf, fasta
 
-
-
 def ampliconseqtoprotein(seq) -> str:
     """Fully translates DNA or RNA seq into a protein."""
 
@@ -886,6 +743,7 @@ def peptide_quality_check(peptideSeqList):
 
 (df, pepfreq, fasta, cumRPM) = search_cluster_peptide("Count_Merged_N4_Trypsin_only_S2_L001_001_trimmed.fasta")
 print(fasta)
+
 df.to_csv ('Count_N4_Trypsin_only_S2_L001_001.csv', index = False, header=True)
 
 (backround, broundDF) = build_negative_peptide("Negative_Control_S1_L001_Trimmed_Merged.fasta-count.fasta")
