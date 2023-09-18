@@ -7,6 +7,8 @@ import math
 from collections import Counter
 import csv
 import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
 
 RawNucleotides = ["A", "C", "G", "T", "N"] # allows for raw read anlysis with bad basecalls
 Nucleotides = ["A", "C", "G", "T"]
@@ -402,7 +404,7 @@ def search_phage_reads(file):
     df = pd.DataFrame(seqfreq.items())
     return readlist, ampliconseq, vectorseq, readcount, seqfreq, df
 
-def search_cluster_peptide(file):
+def search_cluster_peptide(file, startvector, endvector):
     """take fastaptamer FASTA "-count" reads the clusters and their associated info, finds vectors."""
     # function to read fastaptamer cluster FASTA output
     # input: the name (complete path) of the file that contains the sequence to read
@@ -414,8 +416,8 @@ def search_cluster_peptide(file):
     """ holds valid nucleotide vectors (inclusive) in a list"""
     clusternum = []
     """index of the cluster of duplicate seqs found"""
-    startvector = "TTCGCAATTCCTTTAGTTGTTCCTT"
-    endvector = "AGCAAAACCTCATACAGAAAATTCA"
+    #startvector = "GTTCCTTTCTATTCTCACTCGGCCGACGGGGCT"
+    #endvector = "GCTGGGGCCCGCCGTGCTGGGGCCGAA"
     readcount = []
     """ Stores the number of reads found for a particular seq """
     RPM = []
@@ -527,7 +529,7 @@ def search_cluster_peptide(file):
 
     for item in pepseq: # remove seq with less than 10 reads
 
-        if item in pepfreq and pepfreq[item] < 10:
+        if item in pepfreq and pepfreq[item] < 3:
             del pepfreq[item]
             del cumRPM[item]
             del ampToPep[item]
@@ -741,15 +743,47 @@ def peptide_quality_check(peptideSeqList):
                 item = item[:item.rfind("AGA")]
     return trimPeptide
 
-(df, pepfreq, fasta, cumRPM) = search_cluster_peptide("Count_Merged_N4_Trypsin_only_S2_L001_001_trimmed.fasta")
+
+    startvector = "GTTCCTTTCTATTCTCACTCGGCCGACGGGGCT"
+    endvector = "GCTGGGGCCCGCCGTGCTGGGGCCGAA"
+
+
+### First set of primers
+startvector = "TTCGCAATTCCTTTAGTTGTTCCTT"  # original "TTCGCAATTCCTTTAGTTGTTCCTT"
+# endvector = "AGCAAAACCTCATACAGAAAATTCA"
+
+(df1, pepfreq, fasta, cumRPM) = search_cluster_peptide("15mer_lin_f3tr1_S1_L001/15mer_lin_f3tr1_S1_L001_R2_001_count_merged_trimmed.fasta", "GTTCCTTTCTATTCTCACTCGGCCGACGGGGCT", "GCTGGGGCCCGCCGTGCTGGGGCCGAA")
+(df2, pepfreq2, fasta2, cumRPM2) = search_cluster_peptide("Count_15mer_linear_library_S1_L001_001_trimmed.fasta", "TTCGCAATTCCTTTAGTTGTTCCTT", "AGCAAAACCTCATACAGAAAATTCA")
+vectordf = pd.concat([df1, df2], ignore_index=True)
+vectordf = vectordf.sort_values(by='Read Count', ascending=False)
+
 print(fasta)
 
-df.to_csv ('Count_N4_Trypsin_only_S2_L001_001.csv', index = False, header=True)
+vectordf.to_csv ('Combined_old.csv', index = False, header=True)
 
-(backround, broundDF) = build_negative_peptide("Negative_Control_S1_L001_Trimmed_Merged.fasta-count.fasta")
 
-broundDF.to_csv('Negative_backround_peptide.csv', index = False, header=True)
-(filtertest, fasta) = peptide_backround_removal(pepfreq, cumRPM, backround, fasta)
+vectordf['Rank'] = vectordf['Read Count'].rank(ascending=False)
+#vectordf.to_csv ('CountData_For_Super_Library.csv', index=False, header=True)
+
+# Filter data for ranks 1 to 100
+filtered_df = vectordf.iloc[2:]  #[vectordf['Rank'] <= 100]
+
+# Plotting
+plt.figure(figsize=(14, 9))
+plt.plot(filtered_df['Rank'], filtered_df['Read Count'], marker='o', linestyle='-', color='b')
+plt.yscale('log')  # Set y-axis to log scale
+plt.xscale('log')
+plt.xlabel('Rank')
+plt.ylabel('RPM')
+plt.title('RPM vs Rank (Log Scale) for 15mer_lin_f3tr1  ')
+plt.grid(True)
+plt.show()
+
+
+#(backround, broundDF) = build_negative_peptide("Negative_Control_S1_L001_Trimmed_Merged.fasta-count.fasta")
+
+#broundDF.to_csv('Negative_backround_peptide.csv', index = False, header=True)
+#(filtertest, fasta) = peptide_backround_removal(pepfreq, cumRPM, backround, fasta)
 # df = search_cluster_peptide("R1-_merged_001-count.fasta")
 # # print(ampliconseqtoprotein("TNCGCAATTCCTTTAGTTGTTCCTTTCTATTCTCACTCGGCCGACGGGGCTCGTTGGTGTATATGGGTTCCGACTTCTTGGATGTGTCAGAAAGCTGGGGCC"))
 # (readlist, ampliconseq, vectorseq, readcount, seqfreq, df) = search_phage_reads("R1-_merged_001.fastq")
@@ -773,11 +807,11 @@ broundDF.to_csv('Negative_backround_peptide.csv', index = False, header=True)
 # print(c.most_common(50))
 #
 
-filtertest.to_csv ('Filtered_Count_N4_Trypsin_only_S2_L001_001.csv', index = False, header=True)
-print(fasta)
+#filtertest.to_csv ('Filtered_Count_N4_Trypsin_only_S2_L001_001.csv', index = False, header=True)
+#print(fasta)
 
-with open(r'Filtered_Count_N4_Trypsin_only_S2_L001_001.fasta', 'w') as fp:
-    fp.write('\n'.join(fasta))
+#with open(r'Filtered_Count_N4_Trypsin_only_S2_L001_001.fasta', 'w') as fp:
+#    fp.write('\n'.join(fasta))
 
 
 
